@@ -1167,7 +1167,7 @@ rules
 except
 keep
 simply
-latter
+latteris
 victory
 drive
 saint
