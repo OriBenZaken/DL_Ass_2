@@ -8,12 +8,13 @@ import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
+import utils1 as ut1
 
 # global params
 EPOCHS = 10
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
-IMAGE_SIZE = 784
+INPUT_SIZE = 250
 LR = 0.005
 
 # Define your batch_size
@@ -58,18 +59,29 @@ def main():
     # test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
     #                                           batch_size=1,
     #                                           shuffle=False)
-    train_data = torch.load("ner/train")
-    # dev_data =
-    # test_data =
+    train_data_loader = make_data_loader_with_tags('pos/train')
+    dev_data_loader =  make_data_loader_with_tags('pos/dev',is_dev = True)
+    test_data_loader = make_test_data_loader('pos/test')
 
-    model = ThirdNet(image_size=IMAGE_SIZE)
+    model = NeuralNet(input_size=INPUT_SIZE)
     optimizer = optim.Adagrad(model.parameters(), lr=LR)
-    train(train_loader, validation_loader, model, optimizer, test_loader)
-    write_test_pred(model, test_loader)
+    train(train_data_loader, dev_data_loader, model, optimizer, test_data_loader)
+    #write_test_pred(model, test_loader)
+    pass
 
+def make_data_loader_with_tags(file_name, is_dev = False):
+    x, y = ut1.get_tagged_data(file_name,is_dev)
+    x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
+    x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)
+    dataset = torch.utils.data.TensorDataset(x, y)
+    return torch.utils.data.DataLoader(dataset, batch_size, shuffle=True)
 
-def read_train_file():
-
+def make_test_data_loader(file_name):
+    x = ut1.get_not_tagged_data(file_name)
+    x = torch.from_numpy(np.array(x))
+    x = x.type(torch.LongTensor)
+    dataset = torch.utils.data.TensorDataset(x)
+    return torch.utils.data.DataLoader(dataset, batch_size, True)
 
 def write_test_pred(loader, best_model):
     """""
@@ -229,36 +241,31 @@ class SecondNet(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-class ThirdNet(nn.Module):
+class NeuralNet(nn.Module):
     """""
     same as FirstNet.
     includes batch normalization.
     """""
-
-    FIRST_HIDDEN_LAYER_SIZE = 100
-    SECOND_HIDDEN_LAYER_SIZE = 50
-
-    def __init__(self, image_size):
+    def __init__(self, input_size):
         """""
         constructor.
         """""
-        super(ThirdNet, self).__init__()
-        self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, FIRST_HIDDEN_LAYER_SIZE)
-        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, SECOND_HIDDEN_LAYER_SIZE)
-        self.fc2 = nn.Linear(SECOND_HIDDEN_LAYER_SIZE, 10)
-        self.bn1 = nn.BatchNorm1d(FIRST_HIDDEN_LAYER_SIZE)
-        self.bn2 = nn.BatchNorm1d(SECOND_HIDDEN_LAYER_SIZE)
+        super(NeuralNet, self).__init__()
+
+        #self.E = nn.Embedding(vocab_size, embedding_size)  # Embedding matrix
+        #self.after_embed_size = embedding_size * context_size
+        self.input_size = input_size
+        self.fc0 = nn.Linear(input_size, len(ut1.TAGS_SET))
+        #self.bn1 = nn.BatchNorm1d(FIRST_HIDDEN_LAYER_SIZE)
+        #self.bn2 = nn.BatchNorm1d(SECOND_HIDDEN_LAYER_SIZE)
 
     def forward(self, x):
         """""
         forward function.
         calculates the nn params.
         """""
-        x = x.view(-1, self.image_size)
-        x = self.bn1(F.relu(self.fc0(x)))
-        x = self.bn2(F.relu(self.fc1(x)))
-        x = self.fc2(x)
+        x = x.view(-1, self.input_size)
+        x = F.tanh(self.fc0(x))
         return F.log_softmax(x, dim=1)
 
 
