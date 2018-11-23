@@ -11,11 +11,13 @@ from matplotlib.legend_handler import HandlerLine2D
 import utils1 as ut1
 
 # global params
-EPOCHS = 10
+EPOCHS = 5
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
 INPUT_SIZE = 250
 LR = 0.005
+EMBEDDING_VEC_SIZE = 50
+WIN_SIZE = 5
 
 # Define your batch_size
 batch_size = 50
@@ -144,8 +146,8 @@ def run_and_print_results(model, loader, loader_type, batch_size):
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
     test_loss /= (len(loader) * batch_size)
     print('\n' + loader_type + ': Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, (len(loader) * batch_size),
-        100. * correct / (len(loader) * batch_size)))
+        test_loss, correct/batch_size, (len(loader) * batch_size),
+        100. * correct/batch_size / (len(loader) * batch_size)))
     return test_loss
 
 
@@ -173,74 +175,6 @@ def write_test_pred(model, loader):
     pred_file.close()
 
 
-class FirstNet(nn.Module):
-    """""
-    FirstNet class.
-    nn of 2 layers.
-    first layer size is 100.
-    second layer size is 50.
-    """""
-
-    FIRST_HIDDEN_LAYER_SIZE = 100
-    SECOND_HIDDEN_LAYER_SIZE = 50
-
-    def __init__(self, image_size):
-        """""
-        constructor.
-        """""
-        super(FirstNet, self).__init__()
-        self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, FIRST_HIDDEN_LAYER_SIZE)
-        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, SECOND_HIDDEN_LAYER_SIZE)
-        self.fc2 = nn.Linear(SECOND_HIDDEN_LAYER_SIZE, 10)
-
-    def forward(self, x):
-        """""
-        forward function.
-        calculates the nn params.
-        """""
-        x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
-
-
-class SecondNet(nn.Module):
-    """""
-    SecondNet nn.
-    same params as FirstNet.
-    including using dropout.
-    """""
-
-    FIRST_HIDDEN_LAYER_SIZE = 100
-    SECOND_HIDDEN_LAYER_SIZE = 50
-
-    def __init__(self, image_size):
-        """""
-        constructor.
-        """""
-        super(SecondNet, self).__init__()
-        self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, FIRST_HIDDEN_LAYER_SIZE)
-        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, SECOND_HIDDEN_LAYER_SIZE)
-        self.fc2 = nn.Linear(SECOND_HIDDEN_LAYER_SIZE, 10)
-
-    def forward(self, x):
-        """""
-        forward function.
-        calculates the nn params.
-
-        """""
-        x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.dropout(x, training=self.training)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
-
-
 class NeuralNet(nn.Module):
     """""
     same as FirstNet.
@@ -252,19 +186,18 @@ class NeuralNet(nn.Module):
         """""
         super(NeuralNet, self).__init__()
 
-        #self.E = nn.Embedding(vocab_size, embedding_size)  # Embedding matrix
-        #self.after_embed_size = embedding_size * context_size
-        self.input_size = input_size
+        self.E = nn.Embedding(len(ut1.WORDS_SET), EMBEDDING_VEC_SIZE)  # Embedding matrix
+        self.input_size = WIN_SIZE * EMBEDDING_VEC_SIZE
         self.fc0 = nn.Linear(input_size, len(ut1.TAGS_SET))
         #self.bn1 = nn.BatchNorm1d(FIRST_HIDDEN_LAYER_SIZE)
         #self.bn2 = nn.BatchNorm1d(SECOND_HIDDEN_LAYER_SIZE)
 
     def forward(self, x):
         """""
-        forward function.
+        forwardse function.
         calculates the nn params.
         """""
-        x = x.view(-1, self.input_size)
+        x = self.E(x).view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
         return F.log_softmax(x, dim=1)
 
