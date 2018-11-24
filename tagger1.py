@@ -146,8 +146,8 @@ def run_and_print_results(model, loader, loader_type, batch_size):
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
     test_loss /= (len(loader) * batch_size)
     print('\n' + loader_type + ': Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct/batch_size, (len(loader) * batch_size),
-        100. * correct/batch_size / (len(loader) * batch_size)))
+        test_loss, correct, (len(loader) * batch_size),
+        100. * correct / (len(loader) * batch_size)))
     return test_loss
 
 
