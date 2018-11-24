@@ -11,7 +11,7 @@ from matplotlib.legend_handler import HandlerLine2D
 import utils1 as ut1
 
 # Hyper-parameters
-BATCH_SIZE = 40
+BATCH_SIZE = 100
 LEARN_RATE = 0.01
 EPOCHS = 10
 FIRST_HIDDEN_LAYER_SIZE = 100
@@ -55,7 +55,7 @@ class ModelTrainer(object):
             self.train(epoch, avg_train_loss_per_epoch_dict)
             self.validation(epoch, avg_validation_loss_per_epoch_dict)
         plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_loss_per_epoch_dict)
-        #self.test()
+        self.test()
 
     def train(self, epoch, avg_train_loss_per_epoch_dict):
         """
@@ -121,7 +121,7 @@ class ModelTrainer(object):
         correct = 0
         pred_string_list = []
         for data in self.test_loader:
-            output = self.model(data)
+            output = self.model(torch.LongTensor(data))
             # get the predicted class out of output tensor
             pred = output.data.max(1, keepdim=True)[1]
             # add current prediction to predictions list
