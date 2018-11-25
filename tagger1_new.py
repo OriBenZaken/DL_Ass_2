@@ -13,7 +13,7 @@ import utils1 as ut1
 # Hyper-parameters
 BATCH_SIZE = 100
 LEARN_RATE = 0.01
-EPOCHS = 10
+EPOCHS = 1
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -48,13 +48,13 @@ class ModelTrainer(object):
         finally, model is passing on the test set.
         :return: None
         """
-        avg_train_loss_per_epoch_dict = {}
-        avg_validation_loss_per_epoch_dict = {}
-        for epoch in range(1, EPOCHS + 1):
-            print str(epoch)
-            self.train(epoch, avg_train_loss_per_epoch_dict)
-            self.validation(epoch, avg_validation_loss_per_epoch_dict)
-        plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_loss_per_epoch_dict)
+        # avg_train_loss_per_epoch_dict = {}
+        # avg_validation_loss_per_epoch_dict = {}
+        # for epoch in range(1, EPOCHS + 1):
+        #     print str(epoch)
+        #     self.train(epoch, avg_train_loss_per_epoch_dict)
+        #     self.validation(epoch, avg_validation_loss_per_epoch_dict)
+        # plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_loss_per_epoch_dict)
         self.test()
 
     def train(self, epoch, avg_train_loss_per_epoch_dict):
@@ -69,7 +69,7 @@ class ModelTrainer(object):
         train_loss = 0
         correct = 0
 
-        for batch_idx, (data, labels) in enumerate(self.train_loader):
+        for data, labels in self.train_loader:
             self.optimizer.zero_grad()
             output = self.model(data)
             pred = output.data.max(1, keepdim=True)[1]
@@ -77,9 +77,9 @@ class ModelTrainer(object):
             # negative log likelihood loss
             loss = F.nll_loss(output, labels)
             train_loss += loss
-            # calculate gradients
+            # calculating gradients
             loss.backward()
-            # update parameters
+            # updating parameters
             self.optimizer.step()
 
         train_loss /= (len(self.train_loader))
@@ -119,18 +119,31 @@ class ModelTrainer(object):
         self.model.eval()
         test_loss = 0
         correct = 0
-        pred_string_list = []
+        pred_list = []
         for data in self.test_loader:
             output = self.model(torch.LongTensor(data))
             # get the predicted class out of output tensor
             pred = output.data.max(1, keepdim=True)[1]
             # add current prediction to predictions list
-            pred_string_list.append(str(pred.item()))
+            pred_list.append(pred.item())
 
-        # writes the prediction to test.pred file
-        with open("test.pred", 'w') as test_pred_file:
-            test_pred_file.write('\n'.join(pred_string_list))
-        pass
+        pred_list = self.convert_tags_indices_to_tags(pred_list)
+        self.write_test_results_file("pos/test", "test.pos", pred_list)
+
+    def convert_tags_indices_to_tags(self, tags_indices_list):
+        return [ut1.INDEX_TO_TAG[index] for index in tags_indices_list]
+
+    def write_test_results_file(self, test_file_name, output_file_name, predictions_list):
+        with open(test_file_name, 'r') as test_file, open(output_file_name, 'w') as output:
+            content = test_file.readlines()
+            i = 0
+            for line in content:
+                if line == '\n':
+                    output.write(line)
+                else:
+                    output.write(line.strip('\n') + " " + predictions_list[i] + "\n")
+                    i += 1
+
 
 class NeuralNet(nn.Module):
     """
@@ -178,19 +191,23 @@ def plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_l
 
 def make_data_loader_with_tags(file_name, is_dev = False):
     x, y = ut1.get_tagged_data(file_name,is_dev)
-    x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
+    # x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
+    # x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)\
+    x, y = np.asarray(x, np.float32), np.asarray(y, np.int32)
+    x, y = torch.from_numpy(x) , torch.from_numpy(y)
     x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)
     dataset = torch.utils.data.TensorDataset(x, y)
     if is_dev:
-        return torch.utils.data.DataLoader(dataset, BATCH_SIZE, shuffle=True)
-    return torch.utils.data.DataLoader(dataset, 1, shuffle=True)
+        return torch.utils.data.DataLoader(dataset, 1, shuffle=True)
+    return torch.utils.data.DataLoader(dataset, BATCH_SIZE, shuffle=True)
 
 def make_test_data_loader(file_name):
     x = ut1.get_not_tagged_data(file_name)
-    x = torch.from_numpy(np.array(x))
-    x = x.type(torch.LongTensor)
-    dataset = torch.utils.data.TensorDataset(x)
-    return torch.utils.data.DataLoader(dataset, BATCH_SIZE, True)
+    return x
+    # x = torch.from_numpy(np.array(x))
+    # x = x.type(torch.LongTensor)
+    # return torch.utils.data.TensorDataset(x)
+    # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
 
 def main():
     # Create the train_loader
