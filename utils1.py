@@ -19,10 +19,10 @@ def get_word_embeddings_dict_from_file(words_file, vector_file):
     for word, vector_line in izip(open(words_file), open(vector_file)):
         word = word.strip("\n").strip()
         vector_line = vector_line.strip("\n").strip().split(" ")
-        word_embeddings_dict[word] = np.asarray(map(float,vector_line))
+        word_embeddings_dict[word] = np.asanyarray(map(float,vector_line))
 
-    word_embeddings_dict[START] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
-    word_embeddings_dict[END] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
+    #word_embeddings_dict[START] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
+    #word_embeddings_dict[END] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
     return word_embeddings_dict
 
 
