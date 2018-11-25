@@ -38,8 +38,8 @@ def read_tagged_data(file_name, is_dev = False):
                 tagged_sentences.append(sentence_and_tags)
                 sentence_and_tags =[]
                 continue
-            line = line.strip("\n").strip()
-            word, tag  = line.split(" ")
+            line = line.strip("\n").strip().strip("\t")
+            word, tag  = line.split()
             if not is_dev:
                 TAGS_SET.add(tag)
                 WORDS_SET.add(word)

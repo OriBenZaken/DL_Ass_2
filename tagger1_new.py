@@ -9,11 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
 import utils1 as ut1
+import sys
 
 # Hyper-parameters
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 LEARN_RATE = 0.01
-EPOCHS = 1
+EPOCHS = 3
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -41,21 +42,23 @@ class ModelTrainer(object):
         self.model = model
         self.optimizer = optimizer
 
-    def run(self):
+    def run(self, tagger_type):
         """
         calls train and validation methods as the number of epochs.
         calls to method that draw the results graph (avg loss per epoch)
         finally, model is passing on the test set.
         :return: None
         """
-        # avg_train_loss_per_epoch_dict = {}
-        # avg_validation_loss_per_epoch_dict = {}
-        # for epoch in range(1, EPOCHS + 1):
-        #     print str(epoch)
-        #     self.train(epoch, avg_train_loss_per_epoch_dict)
-        #     self.validation(epoch, avg_validation_loss_per_epoch_dict)
-        # plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_loss_per_epoch_dict)
-        self.test()
+        avg_train_loss_per_epoch_dict = {}
+        avg_validation_loss_per_epoch_dict = {}
+        validation_accuracy_per_epoch_dict = {}
+        for epoch in range(1, EPOCHS + 1):
+            print str(epoch)
+            self.train(epoch, avg_train_loss_per_epoch_dict)
+            self.validation(epoch, avg_validation_loss_per_epoch_dict,
+                            validation_accuracy_per_epoch_dict, tagger_type)
+        plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_accuracy_per_epoch_dict)
+        self.test(tagger_type)
 
     def train(self, epoch, avg_train_loss_per_epoch_dict):
         """
@@ -87,7 +90,8 @@ class ModelTrainer(object):
         print("Epoch: {} Train set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)".format(epoch, train_loss, correct, len(self.train_loader) * BATCH_SIZE,
                                                                                             100. * correct / (len(self.train_loader) * BATCH_SIZE)))
 
-    def validation(self, epoch_num, avg_validation_loss_per_epoch_dict):
+    def validation(self, epoch_num, avg_validation_loss_per_epoch_dict,
+                   validation_accuracy_per_epoch_dict, tagger_type):
         """
         go through all examples on the validation set, calculates perdiction, loss
         and accuracy
@@ -98,20 +102,30 @@ class ModelTrainer(object):
         self.model.eval()
         validation_loss = 0
         correct = 0
-
+        total = 0
         for data, target in self.validation_loader:
             output = self.model(data)
             validation_loss += F.nll_loss(output, target, size_average=False).item()
             pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+            if tagger_type == 'ner':
+                if ut1.INDEX_TO_TAG[pred.cpu().sum().item()] != 'O' or ut1.INDEX_TO_TAG[target.cpu().sum().item()] != 'O':
+                    correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+                    total+=1
+            else:
+                total+=1
+                correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+
 
         validation_loss /= len(self.validation_loader)
         avg_validation_loss_per_epoch_dict[epoch_num] = validation_loss
-        print('\n Epoch:{} Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            epoch_num, validation_loss, correct, len(self.validation_loader),
-            100. * correct / len(self.validation_loader)))
+        accuracy =  100. * correct / total
+        validation_accuracy_per_epoch_dict[epoch_num] = accuracy
 
-    def test(self):
+        print('\n Epoch:{} Validation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+            epoch_num, validation_loss, correct, total,
+            accuracy))
+
+    def test(self, tagger_type):
         """
         writes all the model predictions on the test set to test.pred file.
         :return:  None
@@ -128,7 +142,7 @@ class ModelTrainer(object):
             pred_list.append(pred.item())
 
         pred_list = self.convert_tags_indices_to_tags(pred_list)
-        self.write_test_results_file("pos/test", "test.pos", pred_list)
+        self.write_test_results_file(tagger_type + "/test", "test." + tagger_type, pred_list)
 
     def convert_tags_indices_to_tags(self, tags_indices_list):
         return [ut1.INDEX_TO_TAG[index] for index in tags_indices_list]
@@ -172,7 +186,7 @@ class NeuralNet(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-def plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_loss_per_epoch_dict):
+def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_accuracy_per_epoch_dict):
     """
     plot two graphs:
     1. avg loss per epoch on train set
@@ -181,13 +195,20 @@ def plotTrainAndValidationGraphs(avg_train_loss_per_epoch_dict, avg_validation_l
     :param avg_validation_loss_per_epoch_dict: avg validation loss per epoch dictionary
     :return: None
     """
-    line1, = plt.plot(avg_train_loss_per_epoch_dict.keys(), avg_train_loss_per_epoch_dict.values(), "orange",
-                      label='Train average loss')
-    line2, = plt.plot(avg_validation_loss_per_epoch_dict.keys(), avg_validation_loss_per_epoch_dict.values(), "purple",
+    # line1, = plt.plot(avg_train_loss_per_epoch_dict.keys(), avg_train_loss_per_epoch_dict.values(), "orange",
+    #                   label='Train average loss')
+    line1, = plt.plot(avg_validation_loss_per_epoch_dict.keys(), avg_validation_loss_per_epoch_dict.values(), "purple",
                       label='Validation average loss')
     # drawing name of the graphs
     plt.legend(handler_map={line1: HandlerLine2D(numpoints=4)})
     plt.show()
+    line2, = plt.plot(validation_accuracy_per_epoch_dict.keys(), validation_accuracy_per_epoch_dict.values(),
+                      label='Validation average accuracy')
+    # drawing name of the graphs
+    plt.legend(handler_map={line2: HandlerLine2D(numpoints=4)})
+    plt.show()
+
+
 
 def make_data_loader_with_tags(file_name, is_dev = False):
     x, y = ut1.get_tagged_data(file_name,is_dev)
@@ -209,20 +230,21 @@ def make_test_data_loader(file_name):
     # return torch.utils.data.TensorDataset(x)
     # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
 
-def main():
+def main(argv):
+    tagger_type = argv[0]
     # Create the train_loader
-    train_loader = make_data_loader_with_tags('pos/train')
+    train_loader = make_data_loader_with_tags(tagger_type + '/train')
 
-    validation_loader = make_data_loader_with_tags('pos/dev',is_dev = True)
+    validation_loader = make_data_loader_with_tags(tagger_type +'/dev',is_dev = True)
 
-    test_loader = make_test_data_loader('pos/test')
+    test_loader = make_test_data_loader(tagger_type + '/test')
     ## done splitting
 
     model = NeuralNet(input_size=INPUT_SIZE)
-    optimizer = optim.Adagrad(model.parameters(), lr=LEARN_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
 
     trainer = ModelTrainer(train_loader, validation_loader, test_loader, model, optimizer)
-    trainer.run()
+    trainer.run(tagger_type)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
