@@ -25,8 +25,6 @@ def get_word_embeddings_dict_from_file(words_file, vector_file):
     #word_embeddings_dict[END] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
     return word_embeddings_dict
 
-
-
 def read_tagged_data(file_name, is_dev = False):
     global WORDS_SET, TAGS_SET
     tagged_sentences = []
