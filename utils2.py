@@ -8,7 +8,7 @@ START = '*START*'
 END = '*END*'
 UNK = "UUUNKKK"
 TAGS_SET = set()
-WORDS_SET = set()
+WORDS_SET = []
 WORD_TO_INDEX = {}
 INDEX_TO_WORD = {}
 TAG_TO_INDEX = {}
@@ -20,7 +20,7 @@ def get_word_embeddings_dict_from_file(words_file, vector_file):
         word = word.strip("\n").strip()
         vector_line = vector_line.strip("\n").strip().split(" ")
         word_embeddings_dict[word] = np.asanyarray(map(float,vector_line))
-        WORDS_SET.add(word)
+        WORDS_SET.append(word)
 
     # word_embeddings_dict[START] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
     # word_embeddings_dict[END] = np.random.uniform(-1,1,[1, EMBEDDING_VECTOR_SIZE])
@@ -68,7 +68,6 @@ def read_not_tagged_data(file_name):
 
 def load_indexers(word_set, tags_set):
     global  WORD_TO_INDEX, INDEX_TO_WORD, TAG_TO_INDEX, INDEX_TO_TAG
-    word_set.update(set([START, END]))
     WORD_TO_INDEX = {word : i for i, word in enumerate(word_set)}
     INDEX_TO_WORD = {i : word for word, i in WORD_TO_INDEX.iteritems()}
     TAG_TO_INDEX = {tag : i for i, tag in enumerate(tags_set)}

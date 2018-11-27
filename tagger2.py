@@ -12,7 +12,7 @@ import utils2 as ut2
 import sys
 
 # Hyper-parameters
-BATCH_SIZE = 1000
+BATCH_SIZE = 1024
 LEARN_RATE = 0.01
 EPOCHS = 10
 FIRST_HIDDEN_LAYER_SIZE = 100

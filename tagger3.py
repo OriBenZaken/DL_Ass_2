@@ -12,9 +12,9 @@ import utils1 as utils
 import sys
 
 # Hyper-parameters
-BATCH_SIZE = 2000
+BATCH_SIZE = 1024
 LEARN_RATE = 0.01
-EPOCHS = 3
+EPOCHS = 5
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -286,7 +286,7 @@ def main(argv):
     ## done splitting
 
     model = NeuralNet(is_pre_trained_embeddings_needed,input_size=INPUT_SIZE)
-    optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
+    optimizer = optim.RMSprop(model.parameters(), lr=LEARN_RATE)
 
     trainer = ModelTrainer(train_loader, validation_loader, test_loader, model, optimizer)
     trainer.run(tagger_type)
