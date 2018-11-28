@@ -15,7 +15,7 @@ import sys
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01
 EPOCHS = 10
-FIRST_HIDDEN_LAYER_SIZE = 100
+FIRST_HIDDEN_LAYER_SIZE = 150
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
 EMBEDDING_VEC_SIZE = 50
@@ -172,7 +172,8 @@ class NeuralNet(nn.Module):
         self.E = nn.Embedding(ut2.E.shape[0], ut2.E.shape[1])
         self.E.weight.data.copy_(torch.from_numpy(ut2.E))
         self.input_size = ut2.E.shape[1] * WIN_SIZE
-        self.fc0 = nn.Linear(input_size, len(ut2.TAGS_SET))
+        self.fc0 = nn.Linear(input_size, FIRST_HIDDEN_LAYER_SIZE)
+        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, len(ut2.TAGS_SET))
 
 
         # self.lin = nn.Linear(self.after_embed_size, hid_dim)
@@ -192,6 +193,7 @@ class NeuralNet(nn.Module):
         """
         x = self.E(x).view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
 
 

@@ -15,7 +15,7 @@ import sys
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01
 EPOCHS = 5
-FIRST_HIDDEN_LAYER_SIZE = 100
+FIRST_HIDDEN_LAYER_SIZE = 150
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
 EMBEDDING_VEC_SIZE = 50
@@ -180,7 +180,8 @@ class NeuralNet(nn.Module):
             self.E.weight.data.copy_(torch.from_numpy(utils.E))
 
         self.input_size = WIN_SIZE * EMBEDDING_VEC_SIZE
-        self.fc0 = nn.Linear(input_size, len(utils.TAGS_SET))
+        self.fc0 = nn.Linear(input_size, FIRST_HIDDEN_LAYER_SIZE)
+        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, len(utils.TAGS_SET) )
         #initialize prefixes and suffixes
         self.prefixes = {word[:PREFIX_SIZE] for word in utils.WORDS_SET}
         self.suffixes = {word[:-SUFFIX_SIZE] for word in utils.WORDS_SET}
@@ -222,6 +223,7 @@ class NeuralNet(nn.Module):
 
         x = (self.E(x) + self.E_pref(windows_pref) + self.E_suff(windows_suff)).view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
 
 
