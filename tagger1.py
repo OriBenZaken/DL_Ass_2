@@ -171,7 +171,8 @@ class NeuralNet(nn.Module):
 
         self.E = nn.Embedding(len(ut1.WORDS_SET), EMBEDDING_VEC_SIZE)  # Embedding matrix
         self.input_size = WIN_SIZE * EMBEDDING_VEC_SIZE
-        self.fc0 = nn.Linear(input_size, len(ut1.TAGS_SET))
+        self.fc0 = nn.Linear(input_size, FIRST_HIDDEN_LAYER_SIZE)
+        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, len(ut1.TAGS_SET))
         # self.bn1 = nn.BatchNorm1d(FIRST_HIDDEN_LAYER_SIZE)
         # self.bn2 = nn.BatchNorm1d(SECOND_HIDDEN_LAYER_SIZE)
 
@@ -183,6 +184,7 @@ class NeuralNet(nn.Module):
         """
         x = self.E(x).view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
 
 
