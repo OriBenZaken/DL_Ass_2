@@ -14,7 +14,7 @@ import sys
 # Hyper-parameters
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01
-EPOCHS = 10
+EPOCHS = 3
 FIRST_HIDDEN_LAYER_SIZE = 100
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -87,7 +87,7 @@ class ModelTrainer(object):
 
         train_loss /= (len(self.train_loader))
         avg_train_loss_per_epoch_dict[epoch] = train_loss
-        print("Epoch: {} Train set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)".format(epoch, train_loss, correct, len(self.train_loader) * BATCH_SIZE,
+        print("Epoch: {} Train set: Average loss: {:.4f}, Accuracy: {}/{} ({:.00f}%)".format(epoch, train_loss, correct, len(self.train_loader) * BATCH_SIZE,
                                                                                             100. * correct / (len(self.train_loader) * BATCH_SIZE)))
 
     def validation(self, epoch_num, avg_validation_loss_per_epoch_dict,
@@ -142,7 +142,7 @@ class ModelTrainer(object):
             pred_list.append(pred.item())
 
         pred_list = self.convert_tags_indices_to_tags(pred_list)
-        self.write_test_results_file(tagger_type + "/test", "test." + tagger_type, pred_list)
+        self.write_test_results_file(tagger_type + "/test", "test1." + tagger_type, pred_list)
 
     def convert_tags_indices_to_tags(self, tags_indices_list):
         return [ut1.INDEX_TO_TAG[index] for index in tags_indices_list]
@@ -233,7 +233,10 @@ def make_test_data_loader(file_name):
     # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
 
 def main(argv):
+    global LEARN_RATE
     tagger_type = argv[0]
+    if tagger_type == 'ner':
+        LEARN_RATE = 0.05
     # Create the train_loader
     train_loader = make_data_loader_with_tags(tagger_type + '/train')
 

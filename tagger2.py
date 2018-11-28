@@ -14,7 +14,7 @@ import sys
 # Hyper-parameters
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01
-EPOCHS = 10
+EPOCHS = 5
 FIRST_HIDDEN_LAYER_SIZE = 150
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -142,7 +142,7 @@ class ModelTrainer(object):
             pred_list.append(pred.item())
 
         pred_list = self.convert_tags_indices_to_tags(pred_list)
-        self.write_test_results_file(tagger_type + "/test", "test." + tagger_type, pred_list)
+        self.write_test_results_file(tagger_type + "/test", "test2." + tagger_type, pred_list)
 
     def convert_tags_indices_to_tags(self, tags_indices_list):
         return [ut2.INDEX_TO_TAG[index] for index in tags_indices_list]
