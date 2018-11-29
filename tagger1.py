@@ -213,9 +213,14 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
 
 
 def make_data_loader_with_tags(file_name, is_dev = False):
+    """
+    make_data_loader_with_tags functions.
+    make data loader for dev or train.
+    :param file_name: dev or train file name
+    :param is_dev: boolean indicates if the data is for validation.
+    :return: new data loader.
+    """
     x, y = ut1.get_tagged_data(file_name,is_dev)
-    # x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
-    # x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)\
     x, y = np.asarray(x, np.float32), np.asarray(y, np.int32)
     x, y = torch.from_numpy(x) , torch.from_numpy(y)
     x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)
@@ -225,14 +230,22 @@ def make_data_loader_with_tags(file_name, is_dev = False):
     return torch.utils.data.DataLoader(dataset, BATCH_SIZE, shuffle=True)
 
 def make_test_data_loader(file_name):
+    """
+    make_test_data_loader function.
+    make data loader for test.
+    :param file_name: test file name.
+    :return: new data loader.
+    """
     x = ut1.get_not_tagged_data(file_name)
     return x
-    # x = torch.from_numpy(np.array(x))
-    # x = x.type(torch.LongTensor)
-    # return torch.utils.data.TensorDataset(x)
-    # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
 
 def main(argv):
+    """
+    main function.
+    runs the program.
+    :param argv: args[0] indicates if its ner or pos
+    :return:
+    """
     global LEARN_RATE
     tagger_type = argv[0]
     if tagger_type == 'ner':
@@ -243,8 +256,7 @@ def main(argv):
     validation_loader = make_data_loader_with_tags(tagger_type +'/dev',is_dev = True)
 
     test_loader = make_test_data_loader(tagger_type + '/test')
-    ## done splitting
-
+    # done splitting
     model = NeuralNet(input_size=INPUT_SIZE)
     optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
 
