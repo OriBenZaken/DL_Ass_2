@@ -14,7 +14,7 @@ import sys
 # Hyper-parameters
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01
-EPOCHS = 15
+EPOCHS = 10
 FIRST_HIDDEN_LAYER_SIZE = 150
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -243,11 +243,13 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
     # drawing name of the graphs
     plt.legend(handler_map={line1: HandlerLine2D(numpoints=4)})
     plt.show()
+    plt.savefig('vld_avg_loss.png')
     line2, = plt.plot(validation_accuracy_per_epoch_dict.keys(), validation_accuracy_per_epoch_dict.values(),
                       label='Validation average accuracy')
     # drawing name of the graphs
     plt.legend(handler_map={line2: HandlerLine2D(numpoints=4)})
     plt.show()
+    plt.savefig('vld_acc.png')
 
 
 
