@@ -202,12 +202,11 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
     plot two graphs:
     1. avg loss per epoch on train set
     2. avg loss per epoch on validation set
-    :param avg_train_loss_per_epoch_dict: avg train loss per epoch dictionary
+    :param validation_accuracy_per_epoch_dict: avg train loss per epoch dictionary
     :param avg_validation_loss_per_epoch_dict: avg validation loss per epoch dictionary
     :return: None
     """
-    # line1, = plt.plot(avg_train_loss_per_epoch_dict.keys(), avg_train_loss_per_epoch_dict.values(), "orange",
-    #                   label='Train average loss')
+
     line1, = plt.plot(avg_validation_loss_per_epoch_dict.keys(), avg_validation_loss_per_epoch_dict.values(), "purple",
                       label='Validation average loss')
     # drawing name of the graphs
@@ -222,9 +221,14 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
 
 
 def make_data_loader_with_tags(file_name, is_dev = False):
+    """
+    make_data_loader_with_tags functions.
+    make data loader for dev or train.
+    :param file_name: dev or train file name
+    :param is_dev: boolean indicates if the data is for validation.
+    :return: new data loader.
+    """
     x, y = ut2.get_tagged_data(file_name,is_dev)
-    # x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
-    # x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)\
     x, y = np.asarray(x, np.float32), np.asarray(y, np.int32)
     x, y = torch.from_numpy(x) , torch.from_numpy(y)
     x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)
@@ -234,12 +238,14 @@ def make_data_loader_with_tags(file_name, is_dev = False):
     return torch.utils.data.DataLoader(dataset, BATCH_SIZE, shuffle=True)
 
 def make_test_data_loader(file_name):
+    """
+    make_test_data_loader function.
+    make data loader for test.
+    :param file_name: test file name.
+    :return: new data loader.
+    """
     x = ut2.get_not_tagged_data(file_name)
     return x
-    # x = torch.from_numpy(np.array(x))
-    # x = x.type(torch.LongTensor)
-    # return torch.utils.data.TensorDataset(x)
-    # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
 
 def main(argv):
     tagger_type = argv[0]
@@ -250,7 +256,6 @@ def main(argv):
 
     test_loader = make_test_data_loader(tagger_type + '/test')
     ## done splitting
-
     model = NeuralNet(input_size=INPUT_SIZE)
     optimizer = optim.Adam(model.parameters(), lr=LEARN_RATE)
 
