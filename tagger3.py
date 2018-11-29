@@ -243,11 +243,13 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
     # drawing name of the graphs
     plt.legend(handler_map={line1: HandlerLine2D(numpoints=4)})
     plt.show()
+    plt.savefig('vld_avg_loss.png)
     line2, = plt.plot(validation_accuracy_per_epoch_dict.keys(), validation_accuracy_per_epoch_dict.values(),
                       label='Validation average accuracy')
     # drawing name of the graphs
     plt.legend(handler_map={line2: HandlerLine2D(numpoints=4)})
     plt.show()
+    plt.savefig('vld_acc.png')
 
 
 
