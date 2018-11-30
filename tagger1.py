@@ -131,8 +131,6 @@ class ModelTrainer(object):
         :return:  None
         """
         self.model.eval()
-        test_loss = 0
-        correct = 0
         pred_list = []
         for data in self.test_loader:
             output = self.model(torch.LongTensor(data))
@@ -145,9 +143,20 @@ class ModelTrainer(object):
         self.write_test_results_file(tagger_type + "/test", "test1." + tagger_type, pred_list)
 
     def convert_tags_indices_to_tags(self, tags_indices_list):
+        """
+        Converts list of tags indices to tags list (string representation).
+        :param tags_indices_list: tags indices list
+        :return: tags list (string representation)
+        """
         return [ut1.INDEX_TO_TAG[index] for index in tags_indices_list]
 
     def write_test_results_file(self, test_file_name, output_file_name, predictions_list):
+        """
+        writes test predictions to output file.
+        :param test_file_name: test file name
+        :param output_file_name: output file name
+        :param predictions_list: predictions for every word in the test data.
+        """
         with open(test_file_name, 'r') as test_file, open(output_file_name, 'w') as output:
             content = test_file.readlines()
             i = 0

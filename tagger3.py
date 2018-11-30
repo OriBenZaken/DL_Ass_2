@@ -135,8 +135,6 @@ class ModelTrainer(object):
         :return:  None
         """
         self.model.eval()
-        test_loss = 0
-        correct = 0
         pred_list = []
         for data in self.test_loader:
             output = self.model(torch.LongTensor(data))
@@ -149,9 +147,20 @@ class ModelTrainer(object):
         self.write_test_results_file(tagger_type + "/test", "test3." + tagger_type, pred_list)
 
     def convert_tags_indices_to_tags(self, tags_indices_list):
+        """
+        Converts list of tags indices to tags list (string representation).
+        :param tags_indices_list: tags indices list
+        :return: tags list (string representation)
+        """
         return [utils.INDEX_TO_TAG[index] for index in tags_indices_list]
 
     def write_test_results_file(self, test_file_name, output_file_name, predictions_list):
+        """
+        writes test predictions to output file.
+        :param test_file_name: test file name
+        :param output_file_name: output file name
+        :param predictions_list: predictions for every word in the test data.
+        """
         with open(test_file_name, 'r') as test_file, open(output_file_name, 'w') as output:
             content = test_file.readlines()
             i = 0
@@ -254,6 +263,13 @@ def plotTrainAndValidationGraphs(avg_validation_loss_per_epoch_dict, validation_
 
 
 def make_data_loader_with_tags(file_name, is_dev = False):
+    """
+    make_data_loader_with_tags functions.
+    make data loader for dev or train.
+    :param file_name: dev or train file name
+    :param is_dev: boolean indicates if the data is for validation.
+    :return: new data loader.
+    """
     x, y = utils.get_tagged_data(file_name,is_dev)
     # x, y = torch.from_numpy(np.array(x)), torch.from_numpy(np.array(y))
     # x, y = x.type(torch.LongTensor), y.type(torch.LongTensor)\
@@ -266,18 +282,31 @@ def make_data_loader_with_tags(file_name, is_dev = False):
     return torch.utils.data.DataLoader(dataset, BATCH_SIZE, shuffle=True)
 
 def make_test_data_loader(file_name):
+    """
+    make_test_data_loader function.
+    make data loader for test.
+    :param file_name: test file name.
+    :return: new data loader.
+    """
     x = utils.get_not_tagged_data(file_name)
     return x
     # x = torch.from_numpy(np.array(x))
     # x = x.type(torch.LongTensor)
     # return torch.utils.data.TensorDataset(x)
     # return torch.utils.data.DataLoader(dataset, 1, shuffle=False)
+
 is_pre_trained_embeddings_needed = bool(int(sys.argv[2]))
 if is_pre_trained_embeddings_needed:
     import utils2 as utils
 else:
     import utils1 as utils
+
 def main(argv):
+    """
+    main function.
+    runs the program.
+    :param argv: args[0] indicates if its ner or pos
+    """
     tagger_type = argv[0]
     # 0 - don't use pre trained word embeddings, 1 - use pre trained word embeddings
 
