@@ -12,9 +12,9 @@ import utils1 as utils
 import sys
 
 # Hyper-parameters
-BATCH_SIZE = 1024
-LEARN_RATE = 0.01
-EPOCHS = 10
+BATCH_SIZE = 2048
+LEARN_RATE = 0.005
+EPOCHS = 5
 FIRST_HIDDEN_LAYER_SIZE = 150
 SECOND_HIDDEN_LAYER_SIZE = 50
 NUMBER_OF_CLASSES = 10
@@ -306,9 +306,16 @@ def main(argv):
     main function.
     runs the program.
     :param argv: args[0] indicates if its ner or pos
+    args[1] indicates if the model should use pre trained word vectors or not.
     """
+    global EPOCHS, LEARN_RATE, BATCH_SIZE, FIRST_HIDDEN_LAYER_SIZE
     tagger_type = argv[0]
     # 0 - don't use pre trained word embeddings, 1 - use pre trained word embeddings
+    if tagger_type == 'ner':
+        EPOCHS = 5
+        LEARN_RATE = 0.01
+        BATCH_SIZE = 1024
+        FIRST_HIDDEN_LAYER_SIZE = 100
 
     # Create the train_loader
     train_loader = make_data_loader_with_tags(tagger_type + '/train')
