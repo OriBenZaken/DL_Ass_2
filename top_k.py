@@ -8,11 +8,11 @@ from numpy import linalg as la
 
 
 def main():
-    print most_similar("dog", 5)
-    print most_similar("england", 5)
-    print most_similar("john", 5)
-    print most_similar("explode", 5)
-    print most_similar("office", 5)
+    print "Top 5 most similar to dog: " + str(most_similar("dog", 5))
+    print "Top 5 most similar to England: " + str(most_similar("england", 5))
+    print "Top 5 most similar to John: " + str(most_similar("john", 5))
+    print "Top 5 most similar to explode: " + str(most_similar("explode", 5))
+    print "Top 5 most similar to office: " + str(most_similar("office", 5))
 
 
 
@@ -33,7 +33,7 @@ def most_similar(word, k):
         words_distances.append([one_word, calc])
 
     words_distances = sorted(words_distances, key=get_distance)
-    top_k = sorted(words_distances, key=get_distance,reverse=True)[0:k]
+    top_k = sorted(words_distances, key=get_distance,reverse=True)[1:k+1]
     top_k = [item[0] for item in top_k]
     return top_k
 
