@@ -2,6 +2,9 @@ import numpy as np
 import torch as tc
 from itertools import izip
 
+STUDENT = {'name': "Liz Aharonian_Ori Ben Zaken",
+           'ID': "316584960_311492110"}
+
 #globals
 EMBEDDING_VECTOR_SIZE = 50
 START = '*START*'

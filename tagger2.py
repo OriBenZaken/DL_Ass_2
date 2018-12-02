@@ -11,6 +11,9 @@ from matplotlib.legend_handler import HandlerLine2D
 import utils2 as ut2
 import sys
 
+STUDENT = {'name': "Liz Aharonian_Ori Ben Zaken",
+           'ID': "316584960_311492110"}
+
 # Hyper-parameters
 BATCH_SIZE = 1024
 LEARN_RATE = 0.01

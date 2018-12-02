@@ -6,6 +6,8 @@ import math
 import numpy as np
 from numpy import linalg as la
 
+STUDENT = {'name': "Liz Aharonian_Ori Ben Zaken",
+           'ID': "316584960_311492110"}
 
 def main():
     print "Top 5 most similar to dog: " + str(most_similar("dog", 5))
